@@ -84,7 +84,7 @@ namespace UI
     constexpr int LEFT_PANEL_SPACING = 12;
     constexpr int CONTENT_PANEL_X = LEFT_PANEL_X + LEFT_VIEW_MODE_PANEL_WIDTH + 12;
     constexpr int CONTENT_PANEL_Y = LEFT_PANEL_Y;
-    constexpr int CONTENT_PANEL_HEIGHT = 560;
+    constexpr int CONTENT_PANEL_HEIGHT = 620;
 
     // The Settings rows, by index. ONE list, read by both drawSettingsView (which draws the labels, values
     // and badges) and the A-button handler in update() (which toggles them). Private copies of these
@@ -94,12 +94,13 @@ namespace UI
     constexpr int SETTINGS_ROW_AUTO_BACKUP = 0;
     constexpr int SETTINGS_ROW_THEME = 1;
     constexpr int SETTINGS_ROW_ALLOW_ILLEGAL = 2;
-    constexpr int SETTINGS_ROW_AUTO_LEGALIZE = 3;
-    constexpr int SETTINGS_ROW_MOVE_WARNING = 4;
-    constexpr int SETTINGS_ROW_INJECT_TO_GAME = 5;
-    constexpr int SETTINGS_ROW_DEBUG_LOGGING = 6;
-    constexpr int SETTINGS_ROW_LANGUAGE = 7;
-    constexpr int SETTINGS_ROW_COUNT = 8; // rows DEFINED, which is what the row tables are sized by
+    constexpr int SETTINGS_ROW_ALLOW_ABSENT = 3;
+    constexpr int SETTINGS_ROW_AUTO_LEGALIZE = 4;
+    constexpr int SETTINGS_ROW_MOVE_WARNING = 5;
+    constexpr int SETTINGS_ROW_INJECT_TO_GAME = 6;
+    constexpr int SETTINGS_ROW_DEBUG_LOGGING = 7;
+    constexpr int SETTINGS_ROW_LANGUAGE = 8;
+    constexpr int SETTINGS_ROW_COUNT = 9; // rows DEFINED, which is what the row tables are sized by
 
     // Rows actually SHOWN. The Language row is defined but not selectable yet (see
     // Names::DISPLAY_LANGUAGE_SELECTABLE), and a row that does nothing does not belong on screen at
@@ -266,7 +267,7 @@ namespace UI
                 continue;
             if (Pokemon::isLordForm(species, static_cast<uint8_t>(fIndex)))
                 continue;
-            if (byPresence &&
+            if (!g_allowAbsentPokemon && byPresence &&
                 (Pokemon::getPersonalInfo(species, static_cast<uint8_t>(fIndex)).presence & bit) == 0)
                 continue;
             out.push_back(fIndex);
@@ -623,6 +624,7 @@ namespace UI
             "Auto-Backup on Load",
             "Theme",
             "Allow Illegal Values",
+            "Allow Absent Pokémon",
             "Auto-Legalize Unsupported Transfers",
             "Bank Storage Move Warning",
             "Allow Inject Backups to Game Save",
@@ -632,6 +634,7 @@ namespace UI
             g_autoBackupEnabled ? "On" : "Off",
             (g_themeMode == ThemeMode::Dark) ? "Dark" : "Light",
             g_allowIllegalEdits ? "On" : "Off",
+            g_allowAbsentPokemon ? "On" : "Off",
             g_autoLegalizeTransfers ? "On" : "Off",
             g_moveWarn ? "On" : "Off",
             g_injectToGameSave ? "On" : "Off",
@@ -647,6 +650,7 @@ namespace UI
             g_autoBackupEnabled,
             false, // Theme names its mode (Dark/Light) rather than toggling, so it never lights up
             g_allowIllegalEdits,
+            g_allowAbsentPokemon,
             g_autoLegalizeTransfers,
             g_moveWarn,
             g_injectToGameSave,
@@ -655,7 +659,7 @@ namespace UI
         };
         // Amber "On" for the benign toggles; RED for the two that can damage real data -- the
         // illegal-values override and game-save injection. Colour carries the risk, not just text.
-        const bool rowIsDestructive[rowCount] = {false, false, true, false, false, true, false, false};
+        const bool rowIsDestructive[rowCount] = {false, false, true, true, false, false, true, false, false};
         // The panel is a fixed height, so the rows have to fit inside it -- there is no scrolling
         // here. The assert is the point, and it has earned its keep twice: the Language row as a
         // seventh and the auto-legalize row as an EIGHTH each broke the build rather than quietly
@@ -1250,7 +1254,7 @@ namespace UI
             // ANY form present, not just form 0 -- see speciesPresentIn. Creating one of these picks
             // up the right form automatically: buildDefaultMon starts a pokemon on the first form the
             // game has, so a Braviary made in Legends: Arceus is Hisuian.
-            const bool passed = (bit != 0)             ? speciesPresentIn(static_cast<uint16_t>(sIndex), bit)
+            const bool passed = (bit != 0)             ? (g_allowAbsentPokemon || speciesPresentIn(static_cast<uint16_t>(sIndex), bit))
                                 : (highestSpeciesId != 0) ? (sIndex <= static_cast<int>(highestSpeciesId))
                                                           : true;
             if (passed)
@@ -6477,6 +6481,8 @@ namespace UI
                         applyTheme(g_themeMode == ThemeMode::Dark ? ThemeMode::Light : ThemeMode::Dark);
                     else if (settingsSelectedRow == SETTINGS_ROW_ALLOW_ILLEGAL)
                         g_allowIllegalEdits = !g_allowIllegalEdits;
+                    else if (settingsSelectedRow == SETTINGS_ROW_ALLOW_ABSENT)
+                        g_allowAbsentPokemon = !g_allowAbsentPokemon;
                     else if (settingsSelectedRow == SETTINGS_ROW_AUTO_LEGALIZE)
                     {
                         // Rebuilding a pokemon the destination could never have produced REWRITES

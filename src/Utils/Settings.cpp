@@ -57,6 +57,10 @@ namespace Utils
             {
                 g_allowIllegalEdits = (strcmp(value, "0") != 0);
             }
+            else if (strcmp(key, "allowAbsent") == 0)
+            {
+                g_allowAbsentPokemon = (strcmp(value, "0") != 0);
+            }
             else if (strcmp(key, "autoLegalize") == 0)
             {
                 g_autoLegalizeTransfers = (strcmp(value, "0") != 0);
@@ -116,6 +120,7 @@ namespace Utils
         fprintf(f, "theme=%s\n", (UI::g_themeMode == UI::ThemeMode::Light) ? "light" : "dark");
         fprintf(f, "autoBackup=%d\n", g_autoBackupEnabled ? 1 : 0);
         fprintf(f, "allowIllegal=%d\n", g_allowIllegalEdits ? 1 : 0);
+        fprintf(f, "allowAbsent=%d\n", g_allowAbsentPokemon ? 1 : 0);
         fprintf(f, "autoLegalize=%d\n", g_autoLegalizeTransfers ? 1 : 0);
         fprintf(f, "moveWarn=%d\n", g_moveWarn ? 1 : 0);
         fprintf(f, "injectToGame=%d\n", g_injectToGameSave ? 1 : 0);

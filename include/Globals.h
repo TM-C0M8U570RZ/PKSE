@@ -47,6 +47,7 @@ inline bool g_injectToGameSave = false;
 inline bool g_autoBackupEnabled = true;
 inline bool g_allowIllegalEdits = false; // Settings toggle: lift the legal EV/AV caps (0-252 / 0-200 -> 0-255) so
                                          // illegal values can be set (e.g. to test the legality checker).
+inline bool g_allowAbsentPokemon = false; // For mods that add missing Pokémon
 
 // Settings toggle: when a transfer has NO officially supported route (Gen 1/2 -> Gen 3, say),
 // rebuild the Pokemon as a legal native of the destination -- derive its met location from a real
